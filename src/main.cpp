@@ -24,8 +24,9 @@
 Adafruit_NeoPixel pixels(NUM_PIXELS, PIXEL_PIN, NEO_GRB + NEO_KHZ800);    // Create a NeoPixel object
 
 
-uint8_t x, y, z;              // Target color position
+uint8_t score = 0;            // Score
 
+uint8_t x, y, z;              // Target color position
 uint8_t num = 0;              // Current color position
 uint8_t last_num = 0;         // Last color position
 int now_color = 0;            // Current color
@@ -103,6 +104,10 @@ void gameOver() {
     delay(300);                                                   
     
   }
+  delay(1000);    // Delay 1000ms
+  score = 0;    // Score is 0
+  if (DEBUG) { Serial.println("Game Over");}    // Print Game Over
+  
 }
 
 // Button state handler
@@ -163,6 +168,8 @@ void gameRunningHandler(){
       pixels.fill(pixels.Color(0, 0, 0), 0, NUM_PIXELS);
       pixels.show();
       speed -= level;                       // Speed is speed - level 
+      score++;                              // Increment the score
+      Serial.println("Score: " + String(score));
       next_color = (next_color + 1) % 12;
       now_color = (now_color + 1) % 12;
       new_target = true;
