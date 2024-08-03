@@ -10,12 +10,12 @@
 //                    The game will restart if the speed is too fast. 
 //                    The game will show a rainbow cycle when the game is over.
 
-#define DEBUG 1     // 1 for debug mode, 0 for normal mode
+#define DEBUG 0         // 1 for debug mode, 0 for normal mode
 
 
 #define BUTTON_PIN 18   // Button pin
 #define PIXEL_PIN 27    // Neopixel pin
-#define NUM_PIXELS 40   // Number of neopixels
+#define NUM_PIXELS 50   // Number of neopixels
 #define SPEED 0.1       // Speed of the light
 
 #include <Arduino.h>              // Include the Arduino library  
@@ -31,7 +31,7 @@ uint8_t num = 0;              // Current color position
 uint8_t last_num = 0;         // Last color position
 int now_color = 0;            // Current color
 int next_color = 1;           // Next color
-float speed = SPEED;            // Speed of the light
+float speed = SPEED;          // Speed of the light
 float level = 0.005;          // Level of the speed
 float final_level = 0.001;    // Final level of the speed
 bool new_target = true;       // New target color
@@ -56,23 +56,23 @@ uint32_t colors[] = {         // Colors
 
 // Wheel function to create a rainbow color
 uint32_t Wheel(byte WheelPos) {
-  WheelPos = 255 - WheelPos;
+  WheelPos = 255 - WheelPos;                                      // Wheel position is 255 - Wheel position
   if (WheelPos < 85) {
-    return pixels.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+    return pixels.Color(255 - WheelPos * 3, 0, WheelPos * 3);     // Return the color
   }
-  if (WheelPos < 170) {
+  if (WheelPos < 170) {                                           // If the Wheel position is less than 170
     WheelPos -= 85;
-    return pixels.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+    return pixels.Color(0, WheelPos * 3, 255 - WheelPos * 3);     // Return the color
   }
   WheelPos -= 170;
-  return pixels.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+  return pixels.Color(WheelPos * 3, 255 - WheelPos * 3, 0);       // Return the color
 }
 
 // Rainbow cycle function
 void rainbowCycle(int wait) {
-  for (int j = 0; j < 256; j++) {
-    for (int i = 0; i < NUM_PIXELS; i++) {
-      pixels.setPixelColor(i, Wheel((i * 256 / NUM_PIXELS + j) & 255));
+  for (int j = 0; j < 256; j++) {                                       // For loop from 0 to 256
+    for (int i = 0; i < NUM_PIXELS; i++) {                              // For loop from 0 to NUM_PIXELS
+      pixels.setPixelColor(i, Wheel((i * 256 / NUM_PIXELS + j) & 255)); // Set the pixel color to the Wheel color
     }
     pixels.show();
     delay(wait);
@@ -81,11 +81,11 @@ void rainbowCycle(int wait) {
 
 
 //  Color chase function
-void colorChase(uint32_t c, int wait) {
-  for (int i = 0; i < NUM_PIXELS; i++) {
-    pixels.setPixelColor(i, c);
+void colorChase(uint32_t c, int wait) {    
+  for (int i = 0; i < NUM_PIXELS; i++) {    // For loop from 0 to NUM_PIXELS
+    pixels.setPixelColor(i, c);             // Set the pixel color to c
     delay(wait);
-    pixels.show();
+    pixels.show();                          // Show the neopixels
   }
   delay(500);
 }
@@ -94,7 +94,7 @@ void colorChase(uint32_t c, int wait) {
 // Game over function
 void gameOver() {
   colorChase(pixels.Color(0, 0, 0), 10);    // Color chase with black color
-  game_running = false;                     // Game state is false
+
   for (int i = 0; i < 3; i++) {             // Flash the neopixels
     pixels.fill(pixels.Color(255, 0, 0), 0, NUM_PIXELS);    // Fill the neopixels with red color
     pixels.show();                                          // Show the neopixels
@@ -106,6 +106,7 @@ void gameOver() {
   }
   delay(1000);    // Delay 1000ms
   score = 0;    // Score is 0
+  game_running = false;                     // Game state is false
   if (DEBUG) { Serial.println("Game Over");}    // Print Game Over
   
 }
@@ -135,8 +136,8 @@ void newTargetHandler(){                  // New target handler
 void gameRunningHandler(){
   
   if (millis() - last_time > speed * 1000) {    // If the current time - last time is greater than speed * 1000
-    if (num > 0) {                            // If num is greater than 0
-      last_num = num - 1;                     // Last num is num - 1
+    if (num > 0) {                              // If num is greater than 0
+      last_num = num - 1;                       // Last num is num - 1
       pixels.setPixelColor(last_num, pixels.Color(0, 0, 0));    // Set the last num pixel color to black
       pixels.show();                                            // Show the neopixels
     }
@@ -160,71 +161,73 @@ void gameRunningHandler(){
       num = 0;                                                 // Num is 0
     }
 
-    if ((last_num == x || last_num == y || last_num == z) && !digitalRead(BUTTON_PIN)) {
+    if ((last_num == x || last_num == y || last_num == z) && !digitalRead(BUTTON_PIN)) {   // If the last num is x or y or z and the button is pressed
       button_state = false;
-      pixels.fill(colors[next_color], 0, NUM_PIXELS);
-      pixels.show();
+      pixels.fill(colors[next_color], 0, NUM_PIXELS);                    // Fill the neopixels with the next color
+      pixels.show();                                                     // Show the neopixels                  
       delay(500);
-      pixels.fill(pixels.Color(0, 0, 0), 0, NUM_PIXELS);
+      pixels.fill(pixels.Color(0, 0, 0), 0, NUM_PIXELS);                 // Fill the neopixels with black color
       pixels.show();
-      speed -= level;                       // Speed is speed - level 
-      score++;                              // Increment the score
-      Serial.println("Score: " + String(score));
-      next_color = (next_color + 1) % 12;
-      now_color = (now_color + 1) % 12;
+      speed -= level;                                     // Speed is speed - level 
+      score++;                                            // Increment the score
+      Serial.println("Score: " + String(score));          // Print the score
+      next_color = (next_color + 1) % 12;                 // Next color is (next color + 1) % 12
+      now_color = (now_color + 1) % 12;                   // Now color is (now color + 1) % 12
       new_target = true;
-      if (DEBUG) { Serial.println("speed is " + String(speed) + "\t Button is " + String (digitalRead(BUTTON_PIN)));}
+      if (DEBUG) { Serial.println("speed is " + String(speed) + "\t Button is " + String (digitalRead(BUTTON_PIN)));}     // Print the speed and button state
       
      }
 
-    if ((last_num != x && last_num != y && last_num != z) && !digitalRead(BUTTON_PIN)) {
+    if ((last_num != x && last_num != y && last_num != z) && !digitalRead(BUTTON_PIN)) {      // If the last num is not x or y or z and the button is pressed
       button_state = false;
-      pixels.fill(colors[now_color], 0, NUM_PIXELS);
+      pixels.fill(colors[now_color], 0, NUM_PIXELS);                    // Fill the neopixels with the now color
       pixels.show();
-      gameOver();
+      gameOver();                                                       // Game over function
       num = 0;
-      pixels.fill(pixels.Color(0, 0, 0), 0, NUM_PIXELS);
+      pixels.fill(pixels.Color(0, 0, 0), 0, NUM_PIXELS);                // Fill the neopixels with black color
       pixels.show();
-      speed = SPEED;
+      speed = SPEED;                                                    // Speed is SPEED
       next_color = 1;
       now_color = 0;
       new_target = true;
-      if (DEBUG) { Serial.println("speed is " + String(speed) + "\t Button is " + String (digitalRead(BUTTON_PIN)));}
+      if (DEBUG) { Serial.println("speed is " + String(speed) + "\t Button is " + String (digitalRead(BUTTON_PIN)));}   // Print the speed and button state
       
     }
 
-    if (speed < final_level) {
-      rainbowCycle(10);
+    if (speed < final_level) {          // If the speed is less than the final level
+      rainbowCycle(10);                 // Rainbow cycle function
       delay(1000);
-      num = 0;
-      pixels.fill(pixels.Color(0, 0, 0), 0, NUM_PIXELS);
+      num = 0;                          // Num is 0
+      pixels.fill(pixels.Color(0, 0, 0), 0, NUM_PIXELS);      // Fill the neopixels with black color
       pixels.show();
-      speed = SPEED;             // Speed is SPEED
-      next_color = 1;
-      now_color = 0;
-      new_target = true;
+      speed = SPEED;                       // Speed is SPEED
+      next_color = 1;                      // Next color is 1
+      now_color = 0;                       // Now color is 0
+      new_target = true;                   // New target is true
     }
 
-    last_time = millis();
+    last_time = millis();                                     // Last time is millis
   }
 }
 
 void setup() {
-  Serial.begin(9600);
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
-  pixels.begin();
-  pixels.setBrightness(50);
+  Serial.begin(9600);                     // Begin the serial communication
+  pinMode(BUTTON_PIN, INPUT_PULLUP);      // Set the button pin as input pullup
+  pixels.begin();                         // Begin the neopixels
+  pixels.setBrightness(255);              // Set the brightness of the neopixels
 }
 
 
 void loop() {
-  if (!digitalRead(BUTTON_PIN) && !game_running) {
-    game_running = true;
-    delay(500);
+  if (!game_running) {                    // If the game is not running
+    if (!digitalRead(BUTTON_PIN)) {       // If the button is pressed
+      game_running = true;                // Game state is true
+      delay(500);
+    }
   }
-  if (game_running){
-    butttonStateHandler();
-    newTargetHandler();
-    gameRunningHandler();
+  if (game_running){                    // If the game is running
+    butttonStateHandler();              // Button state handler
+    newTargetHandler();                 // New target handler
+    gameRunningHandler();               // Game running handler
   }
 }
