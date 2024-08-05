@@ -15,20 +15,38 @@
 
 #define BUTTON_PIN 18   // Button pin
 #define PIXEL_PIN 27    // Neopixel pin
-#define NUM_PIXELS 50   // Number of neopixels
+#define NUM_PIXELS 51   // Number of neopixels
 #define SPEED 0.1       // Speed of the light
 
 #include <Arduino.h>              // Include the Arduino library  
 #include <Adafruit_NeoPixel.h>    // Include the Adafruit NeoPixel library
+#include <ShiftRegister74HC595.h>
+
+// Create an instance of the shift register
+ShiftRegister74HC595 sr (2, 23, 21, 19);
+uint8_t digit1, digit2;
+
+uint8_t  numberB[] = {B10101111, //0
+                      B00001100, //1 
+                      B11000111, //2
+                      B11001110, //3 
+                      B01101100, //4
+                      B11101010, //5
+                      B11101011, //6
+                      B00001110, //7
+                      B11101111, //8
+                      B11101110  //9
+                     };
+
 
 Adafruit_NeoPixel pixels(NUM_PIXELS, PIXEL_PIN, NEO_GRB + NEO_KHZ800);    // Create a NeoPixel object
 
 
 uint8_t score = 0;            // Score
 
-uint8_t x, y, z;              // Target color position
-uint8_t num = 0;              // Current color position
-uint8_t last_num = 0;         // Last color position
+int8_t x, y, z;              // Target color position
+int8_t num = 0;              // Current color position
+int8_t last_num = 0;         // Last color position
 int now_color = 0;            // Current color
 int next_color = 1;           // Next color
 float speed = SPEED;          // Speed of the light
@@ -53,6 +71,25 @@ uint32_t colors[] = {         // Colors
   pixels.Color(0, 255, 255),  // AQUA
   pixels.Color(255, 192, 203) // PINK
 };
+
+
+void blink(){
+  for(int i = 0; i<3; i++){
+    sr.setAllHigh(); // set all pins LOW
+    delay(300);
+    sr.setAllLow(); // set all pins HIGH
+    delay(300);
+    
+  }
+}   
+
+void displayScore(uint16_t score) {
+    digit1=score % 10 ;
+    digit2=(score / 10) % 10 ;
+    
+    uint8_t numberToPrint[]= {numberB[digit1],numberB[digit2]};
+    sr.setAll(numberToPrint); 
+}
 
 // Wheel function to create a rainbow color
 uint32_t Wheel(byte WheelPos) {
@@ -104,8 +141,15 @@ void gameOver() {
     delay(300);                                                   
     
   }
-  delay(1000);    // Delay 1000ms
+  delay(1000);
+  for (uint8_t i = 0; i<3; i++  ){
+    displayScore(score);
+    delay(300);
+    sr.setAllLow(); // set all pins HIGH
+    delay(300);
+  }
   score = 0;    // Score is 0
+  displayScore(score);    // Display the score
   game_running = false;                     // Game state is false
   if (DEBUG) { Serial.println("Game Over");}    // Print Game Over
   
@@ -134,7 +178,6 @@ void newTargetHandler(){                  // New target handler
 
 // Game running handler
 void gameRunningHandler(){
-  
   if (millis() - last_time > speed * 1000) {    // If the current time - last time is greater than speed * 1000
     if (num > 0) {                              // If num is greater than 0
       last_num = num - 1;                       // Last num is num - 1
@@ -163,13 +206,14 @@ void gameRunningHandler(){
 
     if ((last_num == x || last_num == y || last_num == z) && !digitalRead(BUTTON_PIN)) {   // If the last num is x or y or z and the button is pressed
       button_state = false;
+      score++;                                            // Increment the score
+      displayScore(score);  
       pixels.fill(colors[next_color], 0, NUM_PIXELS);                    // Fill the neopixels with the next color
       pixels.show();                                                     // Show the neopixels                  
       delay(500);
       pixels.fill(pixels.Color(0, 0, 0), 0, NUM_PIXELS);                 // Fill the neopixels with black color
       pixels.show();
       speed -= level;                                     // Speed is speed - level 
-      score++;                                            // Increment the score
       Serial.println("Score: " + String(score));          // Print the score
       next_color = (next_color + 1) % 12;                 // Next color is (next color + 1) % 12
       now_color = (now_color + 1) % 12;                   // Now color is (now color + 1) % 12
@@ -196,7 +240,16 @@ void gameRunningHandler(){
 
     if (speed < final_level) {          // If the speed is less than the final level
       rainbowCycle(10);                 // Rainbow cycle function
-      delay(1000);
+      delay(5000);
+      for (uint8_t i = 0; i<3; i++  ){
+        displayScore(score);
+        delay(300);
+        sr.setAllLow(); // set all pins HIGH
+        delay(300);
+      }
+      score = 0;                        // Score is 0
+      game_running = false;             // Game state is false
+      displayScore(score);              // Display the score
       num = 0;                          // Num is 0
       pixels.fill(pixels.Color(0, 0, 0), 0, NUM_PIXELS);      // Fill the neopixels with black color
       pixels.show();
@@ -215,6 +268,8 @@ void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);      // Set the button pin as input pullup
   pixels.begin();                         // Begin the neopixels
   pixels.setBrightness(255);              // Set the brightness of the neopixels
+  blink();
+  displayScore(score);
 }
 
 
