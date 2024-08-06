@@ -9,7 +9,7 @@ Press the button once to start the game. There will be three pixels stationary a
 I’m currently working on this game, a few modifications are to be made. 
 
 ## Future plans : 
-    — Make a stand for mounting the MDF plate. <br>
+    — Make a stand for mounting the MDF plate. 
     — Paint all in White colour. 
     — Give separation inside the led ring for each pixels. 
     — Make the speed increment upon level increment more linear, currently having a exponential increase in speed. 
