@@ -16,8 +16,8 @@
 #define BUTTON_PIN 18   // Button pin
 #define PIXEL_PIN 27    // Neopixel pin
 #define NUM_PIXELS 51   // Number of neopixels
-#define SPEED 100       // Speed of the light
-#define FINAL_LEVEL 5   // Final level of the speed
+#define SPEED 105       // Speed of the light
+#define FINAL_LEVEL 10  // Final level of the speed
 #define LEVEL 5         // How much the speed increase
 
 #include <Arduino.h>              // Include the Arduino library  
@@ -52,25 +52,25 @@ int8_t last_num = 0;          // Last color position
 int now_color = 0;            // Current color
 int next_color = 1;           // Next color
 int speed = SPEED;            // Speed of the light
-int level = LEVEL;            // How much the speed will increase
+uint8_t level = LEVEL;            // How much the speed will increase
 bool new_target = true;       // New target color
 bool button_state = false;    // Button state
 bool game_running = false;    // Game state
 unsigned long last_time = 0;  // Last time of the light
 
 uint32_t colors[] = {         // Colors
-  pixels.Color(255, 0, 0),    // RED
-  pixels.Color(255, 165, 0),  // ORANGE
-  pixels.Color(255, 255, 0),  // YELLOW
-  pixels.Color(0, 255, 0),    // GREEN
-  pixels.Color(0, 128, 128),  // TEAL
-  pixels.Color(0, 255, 255),  // CYAN
-  pixels.Color(0, 0, 255),    // BLUE
-  pixels.Color(128, 0, 128),  // PURPLE
-  pixels.Color(255, 0, 255),  // MAGENTA
-  pixels.Color(255, 215, 0),  // GOLD
-  pixels.Color(0, 255, 255),  // AQUA
-  pixels.Color(255, 192, 203) // PINK
+  pixels.Color(255, 0,     0),    // RED
+  pixels.Color(255, 165,   0),  // ORANGE
+  pixels.Color(0,   255,   0),    // GREEN
+  pixels.Color(0,   255, 255),  // CYAN
+  pixels.Color(0,   0,   255),    // BLUE
+  pixels.Color(255, 255,   0),  // YELLOW
+  pixels.Color(128, 0,   128),  // PURPLE
+  pixels.Color(0,   128, 128),  // TEAL
+  pixels.Color(255, 0,   255),  // MAGENTA
+  pixels.Color(0,   255, 128),  // SPRING GREEN
+  pixels.Color(0,   255, 255),  // AQUA
+  pixels.Color(255, 0,   128)   // ROSE
 };
 
 
@@ -214,10 +214,12 @@ void gameRunningHandler(){
       delay(500);
       pixels.fill(pixels.Color(0, 0, 0), 0, NUM_PIXELS);                 // Fill the neopixels with black color
       pixels.show();
-      speed = speed - level;                                     // Speed is speed - level 
+      speed = speed - level;                                     // Speed is speed - level
+      // level--; 
+      Serial.println("Level: " + String(level) + "\t Speed: " + String(speed));                // Print the level
       Serial.println("Score: " + String(score));          // Print the score
-      next_color = (next_color + 1) % 12;                 // Next color is (next color + 1) % 12
-      now_color = (now_color + 1) % 12;                   // Now color is (now color + 1) % 12
+      next_color = (next_color + 1) % (sizeof(colors)/sizeof(colors[0]));                 // Next color is next color + 1
+      now_color = (now_color + 1) % (sizeof(colors)/sizeof(colors[0]));                   // Now color is now color + 1
       new_target = true;
       if (DEBUG) { Serial.println("speed is " + String(speed) + "\t Button is " + String (digitalRead(BUTTON_PIN)));}     // Print the speed and button state
       
@@ -272,7 +274,7 @@ void setup() {
   pixels.begin();                         // Begin the neopixels
   pixels.setBrightness(255);              // Set the brightness of the neopixels
   blink();
-  displayScore(score);
+  displayScore(score);  
 }
 
 
