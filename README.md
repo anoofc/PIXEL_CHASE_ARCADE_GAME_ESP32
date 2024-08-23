@@ -1,5 +1,5 @@
 
-# Pixel Chaze Arcade Game with ESP32
+# Pixel Chase Arcade Game with ESP32
 
 Pixel Chase Arcade game inspired by Adafruit Industries youtube video. They originally made the game in Circuit python. Following the same logic, I rewrote the whole adding additional functions for displaying the score on a 7 segment display. 
 
